@@ -157,6 +157,8 @@ function renderStatusBadge(state: ServiceViewState): string {
 }
 ```
 
+The important part is the `never` check. Without it, a new state that is missing from the `switch` can slip through silently. With it, the compiler points to the exact line and refuses to build until the new state is handled.
+
 ---
 
 ## 3. The Honesty of `unknown` and Type Narrowing {#15-unknown-the-honest-type-for-untrusted-values}
