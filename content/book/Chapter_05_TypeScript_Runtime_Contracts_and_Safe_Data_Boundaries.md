@@ -416,6 +416,9 @@ export function parseCitizenService(raw: unknown): Result<CitizenService, string
   if (typeof record.availableOnline !== 'boolean') {
     return { ok: false, error: 'Field "availableOnline" must be boolean' };
   }
+  if (record.department !== 'Civil' && record.department !== 'Housing' && record.department !== 'Legal') {
+    return { ok: false, error: 'Field "department" must be Civil, Housing, or Legal' };
+  }
 
   // Successfully parsed into trusted domain shape
   return {
@@ -424,7 +427,8 @@ export function parseCitizenService(raw: unknown): Result<CitizenService, string
       id: record.id,
       name: record.name.trim(),
       fee: record.fee,
-      availableOnline: record.availableOnline
+      availableOnline: record.availableOnline,
+      department: record.department
     }
   };
 }
@@ -484,8 +488,9 @@ export type Result<T, E = Error> =
 export interface ServiceRecord {
   id: string;
   name: string;
-  feeIqd: number;
-  isAvailable: boolean;
+  fee: number;
+  availableOnline: boolean;
+  department: 'Civil' | 'Housing' | 'Legal';
 }
 
 export class BoundaryError extends Error {
@@ -553,7 +558,7 @@ function parseServiceRecord(raw: unknown): Result<ServiceRecord, BoundaryError> 
 
   const rec = raw as Record<string, unknown>;
 
-  if (typeof rec.id !== 'string' || !rec.id.startsWith('SR-')) {
+  if (typeof rec.id !== 'string' || !/^SR-\d{4}$/.test(rec.id)) {
     return {
       ok: false,
       error: new BoundaryError('schema', 'Missing or invalid service ID format (expected "SR-XXXX")')
@@ -565,16 +570,22 @@ function parseServiceRecord(raw: unknown): Result<ServiceRecord, BoundaryError> 
       error: new BoundaryError('schema', 'Service name must be a valid non-empty string')
     };
   }
-  if (typeof rec.feeIqd !== 'number' || rec.feeIqd < 0) {
+  if (typeof rec.fee !== 'number' || rec.fee < 0) {
     return {
       ok: false,
       error: new BoundaryError('schema', 'Fee must be a non-negative number')
     };
   }
-  if (typeof rec.isAvailable !== 'boolean') {
+  if (typeof rec.availableOnline !== 'boolean') {
     return {
       ok: false,
       error: new BoundaryError('schema', 'Service availability must be a boolean flag')
+    };
+  }
+  if (rec.department !== 'Civil' && rec.department !== 'Housing' && rec.department !== 'Legal') {
+    return {
+      ok: false,
+      error: new BoundaryError('schema', 'Department must be Civil, Housing, or Legal')
     };
   }
 
@@ -584,8 +595,9 @@ function parseServiceRecord(raw: unknown): Result<ServiceRecord, BoundaryError> 
     data: {
       id: rec.id,
       name: rec.name.trim(),
-      feeIqd: rec.feeIqd,
-      isAvailable: rec.isAvailable
+      fee: rec.fee,
+      availableOnline: rec.availableOnline,
+      department: rec.department
     }
   };
 }
@@ -610,7 +622,7 @@ async function renderServiceView(serviceId: string, statusContainer: HTMLElement
 
   // TypeScript guarantees result.data matches ServiceRecord!
   const service = result.data;
-  statusContainer.textContent = `Service: ${service.name} (Fee: ${service.feeIqd.toLocaleString()} IQD)`;
+  statusContainer.textContent = `Service: ${service.name} (Fee: ${service.fee.toLocaleString()} IQD)`;
 }
 ```
 
