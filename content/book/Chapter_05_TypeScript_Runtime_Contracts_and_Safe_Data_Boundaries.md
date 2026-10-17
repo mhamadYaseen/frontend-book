@@ -72,6 +72,8 @@ flowchart LR
     D -- Invalid --> F["Structured Error Handling"]
 ```
 
+<!-- Types disappear after compiling. `as Type` only silences the compiler, so outside data must be checked at runtime. -->
+
 ### Type Inference First {#2-type-inference-first}
 
 TypeScript's inference engine is sophisticated. Developers should allow TypeScript to infer local variables, loop indices, and straightforward return values automatically:
@@ -118,6 +120,9 @@ type ServiceViewState =
 ```
 
 Every state is unambiguous. If `status === 'success'`, TypeScript automatically narrows the type so that `state.data` is guaranteed to exist. If `status === 'loading'`, attempting to read `state.data` produces a compile-time error.
+
+<!-- just for clarity -->
+The `|` symbol means "or": the state is `idle` **or** `loading` **or** `success` **or** `error`, never two at once.
 
 ```mermaid
 flowchart TD
