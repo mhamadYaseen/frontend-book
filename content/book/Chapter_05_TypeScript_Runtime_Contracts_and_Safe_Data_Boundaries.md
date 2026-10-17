@@ -247,6 +247,16 @@ async function safeApiCall<T>(url: string, parser: (raw: unknown) => T): Promise
 
 Here, `safeApiCall` works for any domain model (`T`), returning either the parsed type `{ ok: true; data: T }` or a descriptive failure `{ ok: false; error: string }`.
 
+The benefit is that the parser decides `T`, so TypeScript works out the result type for you:
+
+```typescript
+const result = await safeApiCall('/api/services/SR-1042', parseCitizenService);
+
+if (result.ok) {
+  result.data.name; // TypeScript knows this is a CitizenService
+}
+```
+
 ---
 
 ## 5. Strictness and DOM Typing {#32-typing-the-dom}
@@ -268,7 +278,13 @@ Enterprise projects must enable strict mode in `tsconfig.json`:
 }
 ```
 
+With `strict`, TypeScript turns on a family of strict checks together, so it catches more mistakes.
+
 With `strictNullChecks`, TypeScript prevents accessing properties on values that might be `null` or `undefined`.
+
+With `noImplicitAny`, TypeScript gives an error instead of quietly using `any` when it cannot work out a type, so you must write the type yourself.
+
+With `noUncheckedIndexedAccess`, reading an array item or object key gives `T | undefined`, because the item might not exist.
 
 ### Querying the DOM Safely
 
