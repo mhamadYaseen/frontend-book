@@ -359,7 +359,7 @@ Avoid casting API responses directly with `as`:
 const data = (await res.json()) as CitizenService[];
 ```
 
-An assertion produces zero bytes of runtime JavaScript. It silences compiler errors, but guarantees that any schema mismatch will surface as an unhandled exception deep inside your UI components.
+An assertion adds no check at runtime means that it will be removed by then. It only silences the compiler, so wrong data gets into your app and crashes later, far from where it came from.
 
 ---
 
